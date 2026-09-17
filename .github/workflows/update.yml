@@ -22,7 +22,7 @@ jobs:
       - name: Check and push
         run: |
           git diff --quiet flake.lock && exit 0
-          nix flake check --no-build
+          nix eval .#checks.x86_64-linux --apply 'builtins.mapAttrs (_: d: d.drvPath)'
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -m "flake.lock: update" flake.lock
           git push
