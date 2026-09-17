@@ -1,14 +1,11 @@
 name: iso
 
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 3 1 * *" # monthly
+  push:
+    tags: ["v*"]
 
 permissions:
   contents: write
-
-concurrency: iso
 
 jobs:
   iso:
@@ -16,23 +13,14 @@ jobs:
     steps:
       - uses: easimon/maximize-build-space@v10
         with:
-          overprovision-lvm: true
           remove-android: true
           remove-dotnet: true
           remove-codeql: true
           remove-haskell: true
           remove-docker-images: true
-
       - uses: actions/checkout@v5
       - uses: ./.github/actions/nix
-
-      - run: nix build .#iso --print-build-logs
-
-      - name: Release (rolling `iso`)
-        run: |
-          gh release delete iso --cleanup-tag --yes || true
-          gh release create iso result/iso/*.iso \
-            --title "iso $(date +%F)" \
-            --notes "Built from ${GITHUB_SHA::7}. Boot, \`ssh root@<ip>\` (password \`nixos\`), run \`install <host>\`."
+      - run: nix build .#iso
+      - run: gh release create "$GITHUB_REF_NAME" result/iso/*.iso
         env:
           GH_TOKEN: ${{ github.token }}
