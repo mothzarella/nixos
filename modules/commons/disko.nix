@@ -35,10 +35,6 @@ in {
           inherit mountOptions;
           mountpoint = "/";
         };
-        content.content.subvolumes."/home" = {
-          inherit mountOptions;
-          mountpoint = "/home";
-        };
         content.content.subvolumes."/nix" = {
           inherit mountOptions;
           mountpoint = "/nix";

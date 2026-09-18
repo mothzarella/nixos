@@ -12,7 +12,7 @@
   }: let
     nixinstall = pkgs.writeShellApplication {
       name = "nixinstall";
-      runtimeInputs = [(pkgs.disko.override {nix = config.nix.package;}) pkgs.mkpasswd config.system.build.nixos-install]; # force disko to use lix
+      runtimeInputs = [(pkgs.disko.override {nix = config.nix.package;}) config.nix.package pkgs.mkpasswd config.system.build.nixos-install]; # force disko to use lix
       text = ''
         host=''${1:?usage: nixinstall <host>   (FLAKE=<ref> to override the embedded flake)}
         flake=''${FLAKE:-${inputs.self}}
@@ -20,9 +20,12 @@
         disko --mode destroy,format,mount --yes-wipe-all-disks --flake "$flake#$host"
 
         install -d -m 700 /mnt/persistent/passwords
-        echo "password for tar:"
-        mkpasswd -m yescrypt > /mnt/persistent/passwords/tar
-        chmod 600 /mnt/persistent/passwords/tar
+        read -ra users <<< "$(nix eval --raw "$flake#nixosConfigurations.$host.config.users.users" --apply 'us: toString (builtins.filter (n: (builtins.getAttr n us).isNormalUser) (builtins.attrNames us))')"
+        for u in "''${users[@]}"; do
+          echo "password for $u:"
+          mkpasswd -m yescrypt > "/mnt/persistent/passwords/$u"
+          chmod 600 "/mnt/persistent/passwords/$u"
+        done
 
         mkdir -p /mnt/tmp
         TMPDIR=/mnt/tmp nixos-install --flake "$flake#$host" --no-root-passwd --no-channel-copy

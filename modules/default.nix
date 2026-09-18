@@ -19,7 +19,7 @@ in {
   imports =
     ./.
     |> lib.filesystem.listFilesRecursive
-    |> builtins.filter (f: f != ./default.nix && lib.hasSuffix ".nix" (toString f));
+    |> builtins.filter (f: baseNameOf f != "default.nix" && lib.hasSuffix ".nix" (toString f));
 
   systems = hosts |> map (host: host.system) |> lib.unique;
 

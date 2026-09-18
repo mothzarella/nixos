@@ -7,7 +7,7 @@ in {
     pkgs,
     ...
   }: {
-    imports = with nixos; [disko gaming networking preservation rollback secureboot user];
+    imports = with nixos; [disko gaming networking preservation rollback secureboot silent tar];
 
     time.timeZone = "Europe/Rome";
     i18n.defaultLocale = "en_US.UTF-8";
@@ -36,11 +36,6 @@ in {
     services.thermald.enable = true;
     services.power-profiles-daemon.enable = true;
     preservation.preserveAt."/persistent".directories = ["/var/lib/power-profiles-daemon"];
-
-    # ------------------------------------------------------------------ desktop
-    programs.mango.enable = true;
-    environment.systemPackages = with pkgs; [foot fuzzel firefox kdePackages.kate];
-    hjem.users.tar.files.".config/mango/config.conf".text = builtins.readFile ./mango.conf;
 
     system.stateVersion = "26.11";
   };
