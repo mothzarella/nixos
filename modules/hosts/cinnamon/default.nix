@@ -2,7 +2,11 @@
 {config, ...}: let
   inherit (config.flake.modules) nixos;
 in {
-  flake.modules.nixos.cinnamon = {pkgs, ...}: {
+  flake.modules.nixos.cinnamon = {
+    config,
+    pkgs,
+    ...
+  }: {
     imports = with nixos; [disko gaming networking preservation rollback secureboot user];
 
     time.timeZone = "Europe/Rome";
@@ -19,6 +23,7 @@ in {
     services.xserver.videoDrivers = ["modesetting" "nvidia"];
     hardware.nvidia = {
       open = true;
+      package = config.boot.kernelPackages.nvidiaPackages.cachyos;
       powerManagement.enable = true;
       powerManagement.finegrained = true;
       dynamicBoost.enable = true;
