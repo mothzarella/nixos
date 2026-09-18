@@ -3,6 +3,7 @@ name: check
 on:
   workflow_dispatch:
   push:
+    branches: ["main"]
     paths: ["**.nix", "flake.lock", ".github/**"]
   pull_request:
 

@@ -51,7 +51,7 @@ in {
               nix.package = pkgs.lix;
               nix.channel.enable = false;
               nix.settings.trusted-users = ["@wheel"];
-              nix.settings.experimental-features = ["nix-command" "flakes" "pipe-operator"];
+              nix.settings.experimental-features = ["nix-command" "flakes" "lix-custom-sub-commands" "pipe-operator"]; # nix calls it "pipe-operators" lol
               nix.settings.substituters = ["https://nix-community.cachix.org"];
               nix.settings.trusted-public-keys = ["nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="];
 

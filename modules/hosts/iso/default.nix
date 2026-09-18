@@ -10,11 +10,11 @@
     pkgs,
     ...
   }: let
-    install = pkgs.writeShellApplication {
-      name = "install";
-      runtimeInputs = with pkgs; [disko mkpasswd nixos-install-tools];
+    nixinstall = pkgs.writeShellApplication {
+      name = "nixinstall";
+      runtimeInputs = [(pkgs.disko.override {nix = config.nix.package;}) pkgs.mkpasswd config.system.build.nixos-install]; # force disko to use lix
       text = ''
-        host=''${1:?usage: install <host>   (FLAKE=<ref> to override the embedded flake)}
+        host=''${1:?usage: nixinstall <host>   (FLAKE=<ref> to override the embedded flake)}
         flake=''${FLAKE:-${inputs.self}}
 
         disko --mode destroy,format,mount --yes-wipe-all-disks --flake "$flake#$host"
@@ -53,18 +53,40 @@
     boot.swraid.enable = lib.mkForce false;
     nixpkgs.overlays = lib.mkForce []; # pkgs are readOnly
 
-    system.installer.channel.enable = false; # no nixpkgs copy
+    security.pam.loginLimits = [
+      {
+        domain = "*";
+        item = "nofile";
+        type = "-";
+        value = "65536";
+      }
+    ]; # "too many open files" on big installs
+
     nix.settings = {
       log-lines = 50;
       warn-dirty = false;
       http-connections = 50;
       connect-timeout = 5;
+      flake-registry = ""; # flake is embedded
+      accept-flake-config = false;
     };
 
     documentation.enable = lib.mkForce false;
     environment.defaultPackages = lib.mkForce [];
 
-    environment.systemPackages = [install pkgs.nixos-facter];
+    system = {
+      installer.channel.enable = false; # no nixpkgs copy
+      extraDependencies = lib.mkForce [];
+      etc.overlay.enable = true;
+      disableInstallerTools = true;
+      tools = {
+        nixos-install.enable = true;
+        nixos-enter.enable = true;
+      };
+    };
+    services.userborn.enable = true; # drops perl
+
+    environment.systemPackages = [nixinstall pkgs.nixos-facter];
 
     # ------------------------------------------------------------------ memory
     zramSwap.enable = true;
